@@ -93,6 +93,7 @@ def build_overrides(
         f"Eval.dataset.data_dir={str(data_dir)}",
         f"Global.epoch_num={int(epochs)}",
         f"Train.loader.batch_size_per_card={int(batch_size)}",
+        f"Eval.loader.batch_size_per_card={int(batch_size)}",  # 평가용 배치 사이즈도 동일하게 설정
         f"Global.distributed={'True' if is_distributed else 'False'}",
         f"Global.use_gpu={'True' if (gpus and gpus.strip()) else 'False'}",
     ]
@@ -340,7 +341,7 @@ def main() -> int:
     parser.add_argument("--save-dir", type=str, default=None)
     # 학습 하이퍼파라미터/옵션
     parser.add_argument("--epochs", type=int, default=None)
-    parser.add_argument("--batch-size", type=int, default=4)
+    parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--gpus", type=str, default=None, help="단일 GPU ID (예: 0). 여러 개여도 첫 번째만 사용")
     parser.add_argument("--use-amp", action=BooleanOptionalAction, default=None)
     parser.add_argument("--pretrain", type=str, default=None)
