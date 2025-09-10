@@ -244,18 +244,19 @@ def discover_dataset(data_dir: Path) -> Tuple[Path, Path, Path]:
         if found:
             return sub, found[0], found[1]
 
-    # 2) 1~2 depth 탐색
-    for p in data_dir.iterdir():
-        if p.is_dir():
-            found = _pair_in(p)
-            if found:
-                return p, found[0], found[1]
-            # 2뎁스
-            for q in p.iterdir():
-                if q.is_dir():
-                    found = _pair_in(q)
-                    if found:
-                        return q, found[0], found[1]
+    # 2) 1~2 depth 탐색 (디렉토리가 존재할 때만)
+    if data_dir.exists():
+        for p in data_dir.iterdir():
+            if p.is_dir():
+                found = _pair_in(p)
+                if found:
+                    return p, found[0], found[1]
+                # 2뎁스
+                for q in p.iterdir():
+                    if q.is_dir():
+                        found = _pair_in(q)
+                        if found:
+                            return q, found[0], found[1]
 
     # 실패 시 기존 경로 반환
     return data_dir, data_dir / "train.txt", data_dir / "val.txt"
