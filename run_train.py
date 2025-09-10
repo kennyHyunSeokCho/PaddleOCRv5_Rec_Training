@@ -171,7 +171,7 @@ def download_example_data(data_dir: Path) -> Tuple[Path, Path]:
     import tarfile
     import tempfile
     
-    url = "https://paddleocr.bj.bcebos.com/dataset/icdar2015.tar"
+    url = "https://paddle-model-ecology.bj.bcebos.com/paddlex/data/ocr_rec_dataset_examples.tar"
     
     print(f"[다운로드] PaddleOCR 공식 예시 데이터 다운로드 중...")
     print(f"[URL] {url}")
@@ -194,23 +194,23 @@ def download_example_data(data_dir: Path) -> Tuple[Path, Path]:
             import os
             os.unlink(tmp_file.name)
         
-        # 압축 해제된 데이터 확인 (ICDAR2015 구조)
-        icdar_dir = data_dir / "icdar2015"
-        if icdar_dir.exists():
-            # ICDAR2015 구조에서 train.txt, val.txt 찾기
-            train_path = icdar_dir / "train.txt"
-            val_path = icdar_dir / "val.txt"
+        # 압축 해제된 데이터 확인 (ocr_rec_dataset_examples 구조)
+        example_dir = data_dir / "ocr_rec_dataset_examples"
+        if example_dir.exists():
+            # ocr_rec_dataset_examples 구조에서 train.txt, val.txt 찾기
+            train_path = example_dir / "train.txt"
+            val_path = example_dir / "val.txt"
             
             if train_path.exists() and val_path.exists():
-                print(f"[완료] ICDAR2015 한국어 데이터 다운로드 완료:")
+                print(f"[완료] Recognition 예시 데이터 다운로드 완료:")
                 print(f"  - 학습 데이터: {train_path}")
                 print(f"  - 검증 데이터: {val_path}")
                 return train_path, val_path
             else:
-                print(f"[경고] {icdar_dir}에서 train.txt/val.txt를 찾을 수 없습니다")
+                print(f"[경고] {example_dir}에서 train.txt/val.txt를 찾을 수 없습니다")
                 return None, None
         else:
-            print(f"[경고] 압축 해제 후 {icdar_dir} 디렉토리가 생성되지 않았습니다")
+            print(f"[경고] 압축 해제 후 {example_dir} 디렉토리가 생성되지 않았습니다")
             return None, None
             
     except Exception as e:
