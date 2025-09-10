@@ -28,8 +28,19 @@ fi
 
 # Conda 초기화 및 활성화
 if ! command -v conda >/dev/null 2>&1; then
-  echo "[오류] conda 명령을 찾을 수 없습니다. 먼저 설치/초기화하세요." >&2
-  exit 1
+  # Miniconda가 설치되어 있으면 PATH에 추가
+  if [ -d "${SCRIPT_DIR}/miniconda3" ]; then
+    export PATH="${SCRIPT_DIR}/miniconda3/bin:$PATH"
+    source "${SCRIPT_DIR}/miniconda3/etc/profile.d/conda.sh"
+    echo "[정보] Miniconda PATH 설정 완료"
+  elif [ -d "/content/PaddleOCRv5_Rec_Training/miniconda3" ]; then
+    export PATH="/content/PaddleOCRv5_Rec_Training/miniconda3/bin:$PATH"
+    source "/content/PaddleOCRv5_Rec_Training/miniconda3/etc/profile.d/conda.sh"
+    echo "[정보] Miniconda PATH 설정 완료 (주피터 환경)"
+  else
+    echo "[오류] conda 명령을 찾을 수 없습니다. 먼저 설치/초기화하세요." >&2
+    exit 1
+  fi
 fi
 
 eval "$(conda shell.bash hook)"
