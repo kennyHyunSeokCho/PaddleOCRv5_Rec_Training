@@ -5,7 +5,8 @@ data/
 *.log
 # env/config
 .env
-*.env
+# training_config.env는 템플릿이므로 포함
+!training_config.env
 # python
 __pycache__/
 *.pyc
