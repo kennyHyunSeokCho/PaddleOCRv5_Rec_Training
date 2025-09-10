@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 # 단일 진입점: Conda 환경 로드 → run_train.py 실행
 # 사용법:
 #   ./train.sh                             # ./training_pipeline_rec/.env 사용
@@ -10,14 +10,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # 첫 인자가 .env 파일이면 소비하고, 나머지는 run_train.py에 전달
-ENV_FILE="${1:-${SCRIPT_DIR}/.env}"
+ENV_FILE="${1:-${SCRIPT_DIR}/training_config.env}"
 EXTRA_ARGS=()
 if [[ -f "${ENV_FILE}" ]]; then
   shift || true
   EXTRA_ARGS=("$@")
 else
-  # 첫 인자가 .env가 아니면 기본 .env 사용하고, 모든 인자를 그대로 전달
-  ENV_FILE="${SCRIPT_DIR}/.env"
+  # 첫 인자가 .env가 아니면 기본 training_config.env 사용하고, 모든 인자를 그대로 전달
+  ENV_FILE="${SCRIPT_DIR}/training_config.env"
   EXTRA_ARGS=("$@")
 fi
 
@@ -32,7 +32,7 @@ if ! command -v conda >/dev/null 2>&1; then
   exit 1
 fi
 
-eval "$(conda shell.zsh hook)"
+eval "$(conda shell.bash hook)"
 ENV_NAME_VAL="${ENV_NAME:-ocr_paddle}"
 conda activate "${ENV_NAME_VAL}" || {
   echo "[경고] '${ENV_NAME_VAL}' 환경을 활성화하지 못했습니다. setup_conda.sh를 먼저 실행하세요." >&2
