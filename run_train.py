@@ -165,6 +165,58 @@ def quick_check_labels(label_file: Path, data_dir: Path, max_check: int = 50) ->
     return checked, ok, examples
 
 
+def download_example_data(data_dir: Path) -> Tuple[Path, Path]:
+    """PaddleOCR 공식 예시 데이터 다운로드"""
+    import urllib.request
+    import tarfile
+    import tempfile
+    
+    url = "https://paddle-model-ecology.bj.bcebos.com/paddlex/data/ocr_rec_dataset_examples.tar"
+    
+    print(f"[다운로드] PaddleOCR 공식 예시 데이터 다운로드 중...")
+    print(f"[URL] {url}")
+    
+    try:
+        # 데이터 디렉토리 생성
+        data_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 임시 파일로 다운로드
+        with tempfile.NamedTemporaryFile(suffix='.tar', delete=False) as tmp_file:
+            print("[다운로드] 파일 다운로드 중...")
+            urllib.request.urlretrieve(url, tmp_file.name)
+            
+            # tar 파일 압축 해제
+            print("[압축해제] 데이터 압축 해제 중...")
+            with tarfile.open(tmp_file.name, 'r') as tar:
+                tar.extractall(data_dir)
+            
+            # 임시 파일 삭제
+            import os
+            os.unlink(tmp_file.name)
+        
+        # 압축 해제된 데이터 확인
+        example_dir = data_dir / "ocr_rec_dataset_examples"
+        if example_dir.exists():
+            # train.txt, val.txt 찾기
+            train_path = example_dir / "train.txt"
+            val_path = example_dir / "val.txt"
+            
+            if train_path.exists() and val_path.exists():
+                print(f"[완료] 예시 데이터 다운로드 완료:")
+                print(f"  - 학습 데이터: {train_path}")
+                print(f"  - 검증 데이터: {val_path}")
+                return train_path, val_path
+            else:
+                print(f"[경고] {example_dir}에서 train.txt/val.txt를 찾을 수 없습니다")
+                return None, None
+        else:
+            print(f"[경고] 압축 해제 후 {example_dir} 디렉토리가 생성되지 않았습니다")
+            return None, None
+            
+    except Exception as e:
+        print(f"[오류] 예시 데이터 다운로드 실패: {e}")
+        return None, None
+
 def discover_dataset(data_dir: Path) -> Tuple[Path, Path, Path]:
     """DATA_DIR 하에서 표준 라벨 파일을 자동 탐색
     우선순위: train.txt/val.txt → rec_gt_train.txt/rec_gt_test.txt → 하위 디렉토리(1~2뎁스)
@@ -294,6 +346,7 @@ def main() -> int:
     parser.add_argument("--checkpoints", type=str, default=None)
     # 데이터/라벨 자동탐색 및 경로 재기록
     parser.add_argument("--auto-discover-data", action=BooleanOptionalAction, default=None)
+    parser.add_argument("--download-example-data", action=BooleanOptionalAction, default=None, help="PaddleOCR 공식 예시 데이터 자동 다운로드")
     parser.add_argument("--path-rewrite-from", type=str, default=None)
     parser.add_argument("--path-rewrite-to", type=str, default=None)
     parser.add_argument("--auto-rewrite-to-relative", action=BooleanOptionalAction, default=None)
@@ -402,11 +455,13 @@ def main() -> int:
 
     # 클라우드/마운트 경로 보정 관련 옵션
     auto_discover = to_bool(env.get("AUTO_DISCOVER_DATA", "true"))
+    download_example = to_bool(env.get("DOWNLOAD_EXAMPLE_DATA", "false"))
     path_rewrite_from = env.get("PATH_REWRITE_FROM", "")
     path_rewrite_to = env.get("PATH_REWRITE_TO", "")
     make_relative = to_bool(env.get("AUTO_REWRITE_TO_RELATIVE", "false"))
     # CLI 우선
     if args.auto_discover_data is not None: auto_discover = args.auto_discover_data
+    if args.download_example_data is not None: download_example = args.download_example_data
     if args.path_rewrite_from is not None: path_rewrite_from = args.path_rewrite_from
     if args.path_rewrite_to is not None: path_rewrite_to = args.path_rewrite_to
     if args.auto_rewrite_to_relative is not None: make_relative = args.auto_rewrite_to_relative
@@ -429,8 +484,19 @@ def main() -> int:
         raise FileNotFoundError(f"DATA_DIR이 존재하지 않습니다: {data_dir}")
 
     # 라벨 자동 탐색 (train/val 목록 미존재 또는 파일 없음)
-    need_discover = auto_discover and (not train_list.exists() or not val_list.exists())
-    if need_discover:
+    # 예시 데이터 다운로드 (우선순위 높음)
+    if download_example:
+        print("[예시 데이터] PaddleOCR 공식 예시 데이터 다운로드 중...")
+        example_train, example_val = download_example_data(data_dir)
+        if example_train and example_val:
+            train_list = example_train
+            val_list = example_val
+            print(f"[예시 데이터] 다운로드 완료: {train_list}, {val_list}")
+        else:
+            print("[예시 데이터] 다운로드 실패, 기존 데이터 사용")
+    
+    # 데이터셋 자동 탐색 (예시 데이터가 없을 때만)
+    elif auto_discover and (not train_list.exists() or not val_list.exists()):
         new_root, tr_auto, va_auto = discover_dataset(data_dir)
         print(f"[discover] data_dir={new_root}\n  train={tr_auto}\n  val={va_auto}")
         data_dir = new_root
