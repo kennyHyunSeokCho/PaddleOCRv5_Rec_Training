@@ -1,0 +1,13 @@
+# datasets / outputs
+data/
+*/output/
+**/rewritten_labels/
+*.log
+# env/config
+.env
+*.env
+# python
+__pycache__/
+*.pyc
+# conda/miniconda (optional)
+miniconda3/
