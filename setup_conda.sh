@@ -119,7 +119,7 @@ create_env() {
 install_requirements() {
   print_step "pip 업그레이드 및 필수 패키지 설치"
   python -m pip install -U pip wheel setuptools || fail "pip 업그레이드 실패"
-  pip install tqdm python-dotenv pyyaml || fail "유틸 설치 실패"
+  pip install tqdm python-dotenv pyyaml scikit-image opencv-python pillow || fail "유틸 설치 실패"
   if [ -f "${REPO_DIR}/requirements.txt" ]; then
     echo "[설치] repo requirements.txt"
     pip install -r "${REPO_DIR}/requirements.txt" || fail "requirements 설치 실패"
