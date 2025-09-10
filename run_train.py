@@ -480,10 +480,7 @@ def main() -> int:
         if not Path(p).exists():
             raise FileNotFoundError(f"경로를 확인하세요: {p}")
 
-    if not data_dir.exists():
-        raise FileNotFoundError(f"DATA_DIR이 존재하지 않습니다: {data_dir}")
-
-    # 라벨 자동 탐색 (train/val 목록 미존재 또는 파일 없음)
+    # 데이터 준비 (다운로드 또는 탐색)
     # 예시 데이터 다운로드 (우선순위 높음)
     if download_example:
         print("[예시 데이터] PaddleOCR 공식 예시 데이터 다운로드 중...")
@@ -491,6 +488,7 @@ def main() -> int:
         if example_train and example_val:
             train_list = example_train
             val_list = example_val
+            data_dir = train_list.parent  # 데이터 디렉토리 업데이트
             print(f"[예시 데이터] 다운로드 완료: {train_list}, {val_list}")
         else:
             print("[예시 데이터] 다운로드 실패, 기존 데이터 사용")
@@ -502,6 +500,10 @@ def main() -> int:
         data_dir = new_root
         train_list = tr_auto
         val_list = va_auto
+
+    # DATA_DIR 존재 확인 (데이터 준비 후)
+    if not data_dir.exists():
+        raise FileNotFoundError(f"DATA_DIR이 존재하지 않습니다: {data_dir}")
 
     # 라벨/이미지 빠른 검증
     tr_checked, tr_ok, tr_ex = quick_check_labels(train_list, data_dir)
