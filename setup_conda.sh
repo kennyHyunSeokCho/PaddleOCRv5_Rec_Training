@@ -119,11 +119,26 @@ create_env() {
 install_requirements() {
   print_step "pip 업그레이드 및 필수 패키지 설치"
   python -m pip install -U pip wheel setuptools || fail "pip 업그레이드 실패"
-  pip install tqdm python-dotenv pyyaml scikit-image opencv-python pillow albumentations lmdb shapely pyclipper || fail "유틸 설치 실패"
+  
+  # PaddleOCR 핵심 패키지들 (한번에 설치)
+  echo "[설치] PaddleOCR 핵심 패키지 설치 중..."
+  pip install \
+    tqdm python-dotenv pyyaml \
+    scikit-image opencv-python opencv-contrib-python pillow \
+    albumentations albucore \
+    lmdb shapely pyclipper \
+    requests rapidfuzz cython \
+    packaging numpy scipy \
+    matplotlib pandas scikit-learn \
+    || fail "핵심 패키지 설치 실패"
+  
+  # PaddleOCR 공식 requirements.txt 설치
   if [ -f "${REPO_DIR}/requirements.txt" ]; then
-    echo "[설치] repo requirements.txt"
+    echo "[설치] PaddleOCR 공식 requirements.txt"
     pip install -r "${REPO_DIR}/requirements.txt" || fail "requirements 설치 실패"
   fi
+  
+  echo "[완료] 모든 필수 패키지 설치 완료"
 }
 
 install_paddle() {
