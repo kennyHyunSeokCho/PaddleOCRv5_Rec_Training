@@ -100,10 +100,17 @@ ensure_conda_initialized() {
 
 create_env() {
   print_step "Conda 환경 생성/활성: ${ENV_NAME} (Python ${PYTHON_VERSION})"
+  
+  # TOS 동의 (필요한 경우)
+  echo "[TOS] Conda Terms of Service 동의 처리"
+  conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main 2>/dev/null || true
+  conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r 2>/dev/null || true
+  
   if conda env list | grep -E "^${ENV_NAME}\s" >/dev/null; then
     echo "[정보] 기존 환경 발견: ${ENV_NAME}"
   else
-    conda create -y -n "${ENV_NAME}" "python=${PYTHON_VERSION}" || fail "환경 생성 실패"
+    # conda-forge 채널 사용으로 TOS 문제 회피
+    conda create -y -n "${ENV_NAME}" "python=${PYTHON_VERSION}" -c conda-forge || fail "환경 생성 실패"
   fi
   conda activate "${ENV_NAME}" || fail "환경 활성화 실패"
   python -V
