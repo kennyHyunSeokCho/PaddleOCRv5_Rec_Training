@@ -94,6 +94,7 @@ def build_overrides(
         f"Global.epoch_num={int(epochs)}",
         f"Train.loader.batch_size_per_card={int(batch_size)}",
         f"Eval.loader.batch_size_per_card={int(batch_size)}",  # 평가용 배치 사이즈도 동일하게 설정
+        f"Train.sampler.first_bs={int(batch_size)}",  # MultiScaleSampler의 first_bs 설정
         f"Global.distributed={'True' if is_distributed else 'False'}",
         f"Global.use_gpu={'True' if (gpus and gpus.strip()) else 'False'}",
     ]
